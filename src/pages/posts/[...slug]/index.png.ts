@@ -5,6 +5,8 @@ import satori from "satori";
 import sharp from "sharp";
 import { getFontPathByWeight } from "@/utils/getFontPathByWeight";
 import { getPostSlug } from "@/utils/getPostPaths";
+import { getPostsByLocale } from "@/utils/getPostsByLocale";
+import { DEFAULT_LOCALE } from "@/i18n/locales";
 import config from "@/config";
 
 export async function getStaticPaths() {
@@ -12,8 +14,12 @@ export async function getStaticPaths() {
     return [];
   }
 
-  const posts = await getCollection("posts").then(p =>
-    p.filter(({ data }) => !data.draft && !data.ogImage)
+  const allPosts = await getCollection("posts");
+  // The generated OG image is locale-independent, so only emit one per slug
+  // using the default-locale (English) posts. See the note in
+  // src/pages/posts/[...slug]/index.astro.
+  const posts = getPostsByLocale(allPosts, DEFAULT_LOCALE).filter(
+    ({ data }) => !data.draft && !data.ogImage
   );
 
   return posts.map(post => ({

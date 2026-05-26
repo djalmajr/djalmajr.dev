@@ -2,15 +2,15 @@
 import type { GetStaticPaths } from "astro";
 import { getCollection } from "astro:content";
 import { getSortedPosts } from "@/utils/getSortedPosts";
+import { getPostsByLocale } from "@/utils/getPostsByLocale";
 import { NonDefaultLocales } from "@/i18n/locales";
 import PostsListPage from "@/pages/posts/[...page].astro";
 import config from "@/config";
 
 export const getStaticPaths = (async ({ paginate }) => {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
-  const sortedPosts = getSortedPosts(posts);
   return NonDefaultLocales.flatMap(locale =>
-    paginate(sortedPosts, {
+    paginate(getSortedPosts(getPostsByLocale(posts, locale)), {
       params: { locale },
       pageSize: config.posts.perPage,
     })

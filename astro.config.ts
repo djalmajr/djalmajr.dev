@@ -17,6 +17,23 @@ import {
 import { transformerFileName } from "./src/utils/transformers/fileName";
 import config from "./astro-paper.config";
 
+// Opens external links (http/https) in a new tab. Inline to avoid an extra dep.
+function rehypeExternalLinks() {
+  return (tree: any) => {
+    const visit = (node: any) => {
+      if (node.type === "element" && node.tagName === "a") {
+        const href = node.properties?.href;
+        if (typeof href === "string" && /^https?:\/\//.test(href)) {
+          node.properties.target = "_blank";
+          node.properties.rel = "noopener noreferrer";
+        }
+      }
+      if (Array.isArray(node.children)) node.children.forEach(visit);
+    };
+    visit(tree);
+  };
+}
+
 export default defineConfig({
   site: config.site.url,
   integrations: [
@@ -39,6 +56,7 @@ export default defineConfig({
   },
   markdown: {
     remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }]],
+    rehypePlugins: [rehypeExternalLinks],
     shikiConfig: {
       themes: { light: "min-light", dark: "night-owl" },
       defaultColor: false,

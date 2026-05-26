@@ -5,7 +5,7 @@ export default defineAstroPaperConfig({
     url: "https://djalmajr.dev/",
     title: "Djalma Jr.",
     description: "Djalma Jr's personal blog about software development.",
-    author: "djalmajr",
+    author: "Djalma Jr.",
     profile: "https://github.com/djalmajr",
     ogImage: "default-og.jpg",
     lang: "en",

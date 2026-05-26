@@ -1,5 +1,6 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { BLOG_PATH } from "@/content.config";
+import { Locales } from "@/i18n/locales";
 import { slugifyStr } from "./slugify";
 import config from "@/config";
 
@@ -10,6 +11,9 @@ function getPostPathSegments(filePath: string | undefined): string[] {
       .split("/")
       .filter(path => path !== "")
       .filter(path => !path.startsWith("_"))
+      // Drop the leading per-locale folder (e.g. `en`, `pt`, `es`) so every
+      // translation of a post shares the same slug.
+      .filter(path => !(Locales as readonly string[]).includes(path))
       .slice(0, -1)
       .map(segment => slugifyStr(segment)) ?? []
   );

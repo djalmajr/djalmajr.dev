@@ -2,15 +2,16 @@
 import { getCollection } from "astro:content";
 import { getPostSlug } from "@/utils/getPostPaths";
 import { getSortedPosts } from "@/utils/getSortedPosts";
+import { getPostsByLocale } from "@/utils/getPostsByLocale";
 import { NonDefaultLocales } from "@/i18n/locales";
 import PostDetailPage from "@/pages/posts/[...slug]/index.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts");
-  const sortedPosts = getSortedPosts(posts);
 
-  return NonDefaultLocales.flatMap(locale =>
-    sortedPosts.map((post, index) => ({
+  return NonDefaultLocales.flatMap(locale => {
+    const sortedPosts = getSortedPosts(getPostsByLocale(posts, locale));
+    return sortedPosts.map((post, index) => ({
       params: { locale, slug: getPostSlug(post.id, post.filePath) },
       props: {
         post,
@@ -31,8 +32,8 @@ export async function getStaticPaths() {
               }
             : null,
       },
-    }))
-  );
+    }));
+  });
 }
 
 const { post, prevPost, nextPost } = Astro.props;

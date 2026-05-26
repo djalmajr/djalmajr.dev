@@ -9,12 +9,17 @@ import Card from "@/components/Card.astro";
 import Footer from "@/components/Footer.astro";
 import Pagination from "@/components/Pagination.astro";
 import { getSortedPosts } from "@/utils/getSortedPosts";
+import { getPostsByLocale } from "@/utils/getPostsByLocale";
+import { DEFAULT_LOCALE } from "@/i18n/locales";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
 
 export const getStaticPaths = (async ({ paginate }) => {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
-  return paginate(getSortedPosts(posts), { pageSize: config.posts.perPage });
+  const localePosts = getPostsByLocale(posts, DEFAULT_LOCALE);
+  return paginate(getSortedPosts(localePosts), {
+    pageSize: config.posts.perPage,
+  });
 }) satisfies GetStaticPaths;
 
 const { page } = Astro.props;

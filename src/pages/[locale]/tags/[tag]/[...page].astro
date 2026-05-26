@@ -3,26 +3,30 @@ import type { GetStaticPaths } from "astro";
 import { getCollection } from "astro:content";
 import { getUniqueTags } from "@/utils/getUniqueTags";
 import { getSortedPosts } from "@/utils/getSortedPosts";
+import { getPostsByLocale } from "@/utils/getPostsByLocale";
 import { slugifyAll } from "@/utils/slugify";
-import { NonDefaultLocales } from "@/i18n/locales";
+import { DEFAULT_LOCALE, NonDefaultLocales } from "@/i18n/locales";
 import TagPage from "@/pages/tags/[tag]/[...page].astro";
 import config from "@/config";
 
 export const getStaticPaths = (async ({ paginate }) => {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
-  const tags = getUniqueTags(posts);
-  return NonDefaultLocales.flatMap(locale =>
-    tags.flatMap(({ tag, tagName }) => {
+  // Tag slugs are aggregated from a single locale (English) so they stay
+  // consistent across locales and counts aren't tripled.
+  const tags = getUniqueTags(getPostsByLocale(posts, DEFAULT_LOCALE));
+  return NonDefaultLocales.flatMap(locale => {
+    const localePosts = getPostsByLocale(posts, locale);
+    return tags.flatMap(({ tag, tagName }) => {
       const tagPosts = getSortedPosts(
-        posts.filter(({ data }) => slugifyAll(data.tags).includes(tag))
+        localePosts.filter(({ data }) => slugifyAll(data.tags).includes(tag))
       );
       return paginate(tagPosts, {
         params: { locale, tag },
         props: { tagName },
         pageSize: config.posts.perPage,
       });
-    })
-  );
+    });
+  });
 }) satisfies GetStaticPaths;
 
 const { page, tagName } = Astro.props;

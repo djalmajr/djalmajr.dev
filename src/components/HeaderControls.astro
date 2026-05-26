@@ -1,0 +1,77 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import IconArchive from "@/assets/icons/IconArchive.svg";
+import IconSearch from "@/assets/icons/IconSearch.svg";
+import IconUnderline from "@/assets/icons/IconUnderline.svg";
+import IconMoon from "@/assets/icons/IconMoon.svg";
+import IconSunHigh from "@/assets/icons/IconSunHigh.svg";
+import LinkButton from "./LinkButton.astro";
+import LangSwitcher from "./LangSwitcher.astro";
+import type { ResolvedAstroPaperConfig } from "@/types/config";
+import type { UIStrings } from "@/i18n/types";
+
+interface Props {
+  locale: string;
+  t: UIStrings;
+  features: ResolvedAstroPaperConfig["features"];
+  isActive: (path: string) => boolean;
+}
+
+const { locale, t, features, isActive } = Astro.props;
+---
+
+{
+  features.showArchives && (
+    <LinkButton
+      href={getRelativeLocaleUrl(locale, "archives")}
+      class:list={[
+        "focus-outline relative size-8",
+        { "active-nav": isActive("/archives") },
+      ]}
+      title={t.nav.archives}
+      aria-label={t.nav.archives}
+    >
+      <IconArchive class="absolute top-1/2 left-1/2 size-6 -translate-x-1/2 -translate-y-1/2" />
+      <span class="sr-only">{t.nav.archives}</span>
+      {isActive("/archives") && (
+        <IconUnderline
+          aria-hidden="true"
+          class="absolute bottom-0 w-6 scale-125 max-sm:inset-s-2"
+        />
+      )}
+    </LinkButton>
+  )
+}
+{
+  features.search !== false && (
+    <LinkButton
+      href={getRelativeLocaleUrl(locale, "search")}
+      class:list={["focus-outline relative size-8"]}
+      title={t.nav.search}
+      aria-label={t.nav.search}
+    >
+      <IconSearch class="absolute top-1/2 left-1/2 size-6 -translate-x-1/2 -translate-y-1/2" />
+      <span class="sr-only">{t.nav.search}</span>
+      {isActive("/search") && (
+        <IconUnderline
+          aria-hidden="true"
+          class="absolute bottom-0 w-6 scale-125 max-sm:inset-s-2"
+        />
+      )}
+    </LinkButton>
+  )
+}
+{
+  features.lightAndDarkMode && (
+    <button
+      class="theme-toggle focus-outline hover:[&>svg]:stroke-accent relative size-8"
+      title={t.a11y.toggleTheme}
+      aria-label="auto"
+      aria-live="polite"
+    >
+      <IconMoon class="absolute top-[50%] left-[50%] translate-[-50%] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+      <IconSunHigh class="absolute top-[50%] left-[50%] translate-[-50%] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+    </button>
+  )
+}
+<LangSwitcher />
