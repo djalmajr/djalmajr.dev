@@ -1,0 +1,6 @@
+name = "djalmajr-dev"
+compatibility_date = "2026-05-26"
+
+# Static site built by Astro. The build output is committed to ./dist by
+# `bun run build`. Cloudflare Pages serves this directory directly.
+pages_build_output_dir = "dist"

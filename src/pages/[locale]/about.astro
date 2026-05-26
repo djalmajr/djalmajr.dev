@@ -1,0 +1,12 @@
+---
+import type { GetStaticPaths } from "astro";
+import { NonDefaultLocales } from "@/i18n/locales";
+import AboutPage from "@/pages/about.astro";
+
+export const getStaticPaths = (() =>
+  NonDefaultLocales.map(locale => ({
+    params: { locale },
+  }))) satisfies GetStaticPaths;
+---
+
+<AboutPage />

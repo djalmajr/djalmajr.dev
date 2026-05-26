@@ -1,40 +1,80 @@
-import { defineConfig } from "astro/config";
-import tailwind from "@astrojs/tailwind";
-import react from "@astrojs/react";
+import {
+  defineConfig,
+  envField,
+  fontProviders,
+  svgoOptimizer,
+} from "astro/config";
+import tailwindcss from "@tailwindcss/vite";
+import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
 import remarkToc from "remark-toc";
 import remarkCollapse from "remark-collapse";
-import sitemap from "@astrojs/sitemap";
-import { SITE } from "./src/config";
+import {
+  transformerNotationDiff,
+  transformerNotationHighlight,
+  transformerNotationWordHighlight,
+} from "@shikijs/transformers";
+import { transformerFileName } from "./src/utils/transformers/fileName";
+import config from "./astro-paper.config";
 
-// https://astro.build/config
 export default defineConfig({
-  site: SITE.website,
+  site: config.site.url,
   integrations: [
-    tailwind({
-      applyBaseStyles: false,
+    mdx(),
+    sitemap({
+      i18n: {
+        defaultLocale: "en",
+        locales: { en: "en", pt: "pt", es: "es" },
+      },
+      filter: page =>
+        config.features?.showArchives !== false || !page.endsWith("/archives/"),
     }),
-    react(),
-    sitemap(),
   ],
+  i18n: {
+    locales: ["en", "pt", "es"],
+    defaultLocale: "en",
+    routing: {
+      prefixDefaultLocale: false,
+    },
+  },
   markdown: {
-    remarkPlugins: [
-      remarkToc,
-      [
-        remarkCollapse,
-        {
-          test: "Table of contents",
-        },
-      ],
-    ],
+    remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }]],
     shikiConfig: {
-      theme: "one-dark-pro",
-      wrap: true,
+      themes: { light: "min-light", dark: "night-owl" },
+      defaultColor: false,
+      wrap: false,
+      transformers: [
+        transformerFileName({ style: "v2", hideDot: false }),
+        transformerNotationHighlight(),
+        transformerNotationWordHighlight(),
+        transformerNotationDiff({ matchAlgorithm: "v3" }),
+      ],
     },
   },
   vite: {
-    optimizeDeps: {
-      exclude: ["@resvg/resvg-js"],
+    plugins: [tailwindcss()],
+  },
+  fonts: [
+    {
+      name: "Google Sans Code",
+      cssVariable: "--font-google-sans-code",
+      provider: fontProviders.google(),
+      fallbacks: ["monospace"],
+      weights: [300, 400, 500, 600, 700],
+      styles: ["normal", "italic"],
+      formats: ["woff", "ttf"],
+    },
+  ],
+  env: {
+    schema: {
+      PUBLIC_GOOGLE_SITE_VERIFICATION: envField.string({
+        access: "public",
+        context: "client",
+        optional: true,
+      }),
     },
   },
-  scopedStyleStrategy: "where",
+  experimental: {
+    svgOptimizer: svgoOptimizer(),
+  },
 });
