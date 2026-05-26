@@ -1,0 +1,12 @@
+# Gitleaks configuration — extends the built-in default ruleset.
+# https://github.com/gitleaks/gitleaks
+title = "djalmajr.dev gitleaks config"
+
+[extend]
+useDefault = true
+
+# Add allowlist entries here if false positives appear, e.g.:
+# [[allowlists]]
+# description = "ignore example tokens in docs"
+# regexTarget = "match"
+# paths = ['''README\.md''']
