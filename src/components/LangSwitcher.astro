@@ -1,0 +1,85 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import IconChevronLeft from "@/assets/icons/IconChevronLeft.svg";
+import { Locales, LocaleLabels, type Locale } from "@/i18n/locales";
+import { stripBase, stripLocale } from "@/utils/withBase";
+import config from "@/config";
+
+const currentLocale = (Astro.currentLocale ?? config.site.lang) as Locale;
+
+// Resolve the current route without base/locale prefixes so we can rebuild it
+// for every locale (e.g. "/pt/posts/foo" → "posts/foo").
+const relativePath = stripBase(Astro.url.pathname);
+const pathWithoutTrailingSlash =
+  relativePath.endsWith("/") && relativePath !== "/"
+    ? relativePath.slice(0, -1)
+    : relativePath;
+const currentPath = stripLocale(pathWithoutTrailingSlash, currentLocale);
+const targetPath = currentPath.replace(/^\//, "");
+
+const localeLinks = Locales.map(locale => ({
+  locale,
+  label: LocaleLabels[locale],
+  href: getRelativeLocaleUrl(locale, targetPath),
+  isCurrent: locale === currentLocale,
+}));
+---
+
+<details class="lang-switcher group relative">
+  <summary
+    class="focus-outline hover:text-accent flex cursor-pointer list-none items-center justify-center gap-1 px-4 py-3 font-medium marker:content-none sm:px-2 sm:py-1 [&::-webkit-details-marker]:hidden"
+    aria-label={LocaleLabels[currentLocale]}
+  >
+    <span class="uppercase">{currentLocale}</span>
+    <IconChevronLeft
+      aria-hidden="true"
+      class="size-4 -rotate-90 transition-transform group-open:rotate-90"
+    />
+  </summary>
+  <ul
+    class="border-border bg-background absolute end-0 z-50 mt-1 min-w-36 overflow-hidden rounded-md border py-1 text-start shadow-lg"
+  >
+    {
+      localeLinks.map(({ href, label, isCurrent }) => (
+        <li>
+          <a
+            href={href}
+            class:list={[
+              "hover:text-accent block px-4 py-2 text-sm",
+              { "text-accent font-semibold": isCurrent },
+            ]}
+            aria-current={isCurrent ? "true" : undefined}
+          >
+            {label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</details>
+
+<script>
+  // Close the dropdown when clicking outside or after a client-side navigation.
+  function setupLangSwitcher() {
+    const details = document.querySelectorAll<HTMLDetailsElement>(
+      "details.lang-switcher"
+    );
+    if (!details.length) return;
+
+    const closeAll = (except?: HTMLDetailsElement) => {
+      details.forEach(d => {
+        if (d !== except) d.open = false;
+      });
+    };
+
+    document.addEventListener("click", e => {
+      const target = e.target as Node;
+      const open = Array.from(details).find(d => d.open && d.contains(target));
+      closeAll(open);
+    });
+  }
+
+  setupLangSwitcher();
+
+  document.addEventListener("astro:after-swap", setupLangSwitcher);
+</script>
